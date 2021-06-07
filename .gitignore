@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+*.jpg
+*.png
+*.pdb
+
+Debug/
+Release/
+.vs/
+packages/
