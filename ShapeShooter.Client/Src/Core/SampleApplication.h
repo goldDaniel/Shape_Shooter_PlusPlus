@@ -15,7 +15,6 @@ static glm::vec2 ProjectToXY0Plane(const glm::vec2& mouse_pos,
 {
 	const glm::vec4 viewport{ 0, window_height, window_width, -window_height };
 
-	//TODO: we assume the near & far planes here, fix this assumption later
 	glm::vec3 screen_point_0(mouse_pos.x, mouse_pos.y, 0.f);
 	glm::vec3 screen_point_1(mouse_pos.x, mouse_pos.y, 100.f);
 	glm::vec3 model_point_0 = glm::unProject(screen_point_0, view, proj, viewport);
@@ -23,13 +22,12 @@ static glm::vec2 ProjectToXY0Plane(const glm::vec2& mouse_pos,
 
 	glm::vec3 plane_normal(0, 0, 1);
 	glm::vec3 ray_direction = glm::normalize(model_point_1 - model_point_0);
-	glm::vec3 origin = model_point_0;
 
 	//Solve for d where dot((d * L + L0 - P0), n) = 0
-	float d = glm::dot(-origin, plane_normal) / glm::dot(ray_direction, plane_normal);
+	float d = glm::dot(-model_point_0, plane_normal) / glm::dot(ray_direction, plane_normal);
 
 	//Use d to get back to point on plane
-	glm::vec3 point_on_plane = origin + d * ray_direction;
+	glm::vec3 point_on_plane = model_point_0 + d * ray_direction;
 
 	return glm::vec2(point_on_plane.x, point_on_plane.y);
 }
@@ -50,7 +48,7 @@ public:
 		sh = std::make_unique<ShapeRenderer>();
 		cam = Camera({0,0,30});
 
-		grid = std::make_unique<SpringMassGrid>(glm::vec2{44, 25}, 0.2f);
+		grid = std::make_unique<SpringMassGrid>(glm::vec2{44, 22}, 0.4f);
 	}
 
 	~SampleApplication()
@@ -70,15 +68,14 @@ protected:
 			float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 			float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-			grid->ApplyRadialForce({ world_pos, -0.1f }, 50.0f, 4.0f, {r,g,b, 1.0f});
+			grid->ApplyRadialForce({ world_pos, -0.1f }, 10.0f, 4.0f, {r,g,b, 1.0f});
 		}
-
 		grid->Update(1.0f/60.f);
 	}
 
 	virtual void Render() override
 	{ 
-		proj = glm::perspective(glm::pi<float>() / 4.0f, (float)screen_width / (float)screen_height, 0.1f, 10000.f);
+		proj = glm::perspective(glm::pi<float>() / 4.0f, (float)screen_width / (float)screen_height, 0.1f, 100.0f);
 
 		sh->Begin(proj, cam.GetViewMatrix());
 

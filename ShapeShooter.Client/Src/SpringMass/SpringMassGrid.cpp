@@ -4,8 +4,8 @@
 SpringMassGrid::SpringMassGrid(glm::vec2 dimensions, float spacing)
     : dimensions(dimensions)
 {
-    this->rows = static_cast<int>(dimensions.x / spacing);
-    this->cols = static_cast<int>(dimensions.y / spacing);
+    rows = static_cast<std::size_t>(dimensions.x / spacing);
+    cols = static_cast<std::size_t>(dimensions.y / spacing);
 
     for (std::size_t i = 0; i < rows + 1; i++)
     {

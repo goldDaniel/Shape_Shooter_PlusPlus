@@ -37,9 +37,10 @@ void PointMass::Update(float dt)
     pos.z = glm::abs(pos.z);
     color.a = pos.z;
 
-    color.r = lerp(color.r, 1, dt);
-    color.g = lerp(color.g, 1, dt);
-    color.b = lerp(color.b, 1, dt);
+    color.r = lerp(color.r, 0, dt);
+    color.g = lerp(color.g, 0, dt);
+    color.b = lerp(color.b, 0, dt);
+    color.a = lerp(color.b, 0, dt);
 
     //not really accurate but it works
     vel *= owner->DAMPING * dt;

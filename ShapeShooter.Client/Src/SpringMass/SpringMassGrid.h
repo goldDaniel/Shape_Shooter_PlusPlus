@@ -23,7 +23,7 @@ private:
 
     std::size_t rows;
     std::size_t cols;
-
+    
 public:
 
     SpringMassGrid(glm::vec2 dimensions, float spacing);
