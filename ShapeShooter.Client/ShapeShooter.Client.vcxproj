@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Src\Core\Application.cpp" />
     <ClCompile Include="Src\glad.c" />
+    <ClCompile Include="Src\Graphics\SpriteBatch.cpp" />
     <ClCompile Include="Src\Main.cpp" />
     <ClCompile Include="Src\Graphics\Renderable.cpp" />
     <ClCompile Include="Src\Graphics\Renderer.cpp" />
@@ -38,7 +39,8 @@
     <ClInclude Include="Src\Core\Camera.h" />
     <ClInclude Include="Src\Core\Core.h" />
     <ClInclude Include="Src\Core\Input.h" />
-    <ClInclude Include="Src\Core\SampleApplication.h" />
+    <ClInclude Include="Src\Graphics\SpriteBatch.h" />
+    <ClInclude Include="Src\SampleApplication.h" />
     <ClInclude Include="Src\Graphics\Frustum.h" />
     <ClInclude Include="Src\Graphics\IndexBuffer.h" />
     <ClInclude Include="Src\Graphics\Renderable.h" />

@@ -11,9 +11,9 @@
 class SpringMassGrid
 {
 public:
-    const float STIFFNESS = 3.25f;
-    const float DAMPING = 2.25f;
-    const float INVERSE_MASS = 1.0f / 0.025f;
+    const float STIFFNESS;
+    const float DAMPING;
+    const float INVERSE_MASS;
 
 private:
     std::vector<std::vector<PointMass>> points;
@@ -24,6 +24,8 @@ private:
     std::size_t rows;
     std::size_t cols;
     
+    float accumulator;
+
 public:
 
     SpringMassGrid(glm::vec2 dimensions, float spacing);
@@ -33,11 +35,6 @@ public:
     void ApplyRadialForce(glm::vec3 pos, float force, float radius, glm::vec4 color = glm::vec4(1,1,1,1));
 
     void Render(ShapeRenderer* const sh);
-
-    PointMass& GetPoint(const std::pair<std::size_t, std::size_t>& idx)
-    {
-        return points[idx.first][idx.second];
-    }
 };
 
 

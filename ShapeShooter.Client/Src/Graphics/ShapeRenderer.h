@@ -11,7 +11,8 @@ class ShapeRenderer
 {
 private:
 
-    static const std::size_t MAX_BUFFER_SIZE = 8192 * 24;
+    //128KB
+    static const std::size_t MAX_BUFFER_SIZE = 1024 * 128;
 
     bool has_begun = false;
 

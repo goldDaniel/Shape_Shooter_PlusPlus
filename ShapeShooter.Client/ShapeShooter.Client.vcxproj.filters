@@ -54,6 +54,9 @@
     <ClCompile Include="Src\SpringMass\Spring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Graphics\SpriteBatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Core\Application.h">
@@ -68,7 +71,7 @@
     <ClInclude Include="Src\Core\Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\SampleApplication.h">
+    <ClInclude Include="Src\SampleApplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Graphics\Frustum.h">
@@ -117,6 +120,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\SpringMass\Spring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Graphics\SpriteBatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

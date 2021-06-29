@@ -1,4 +1,4 @@
-#include <Core/SampleApplication.h>
+#include <SampleApplication.h>
 
 #include <thread>
 

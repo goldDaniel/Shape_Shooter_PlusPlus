@@ -4,7 +4,8 @@
 
 #include <glm/glm.hpp>
 
-static float lerp(float v0, float v1, float t) 
+template<typename T>
+static T lerp(T v0, T v1, T t) 
 {
     return v0 + t * (v1 - v0);
 }
@@ -23,7 +24,7 @@ void PointMass::Update(float dt)
     //calculations for said spring. Otherwise the grid effect
     //doesn't come back fast enough, also maintains the general shape
     //of the grid
-    float stiffness_scale = 1.0f / 16.0f;
+    float stiffness_scale = 1.0f / 32.0f;
      
     auto spring_force = -owner->STIFFNESS * stiffness_scale * (pos - desired_pos);
     auto damping_force = owner->DAMPING * vel;
@@ -33,14 +34,12 @@ void PointMass::Update(float dt)
 
     vel += accel * dt;
     pos += vel * dt;
+    
+    color.a = glm::abs(pos.z);
 
-    pos.z = glm::abs(pos.z);
-    color.a = pos.z;
-
-    color.r = lerp(color.r, 0, dt);
-    color.g = lerp(color.g, 0, dt);
-    color.b = lerp(color.b, 0, dt);
-    color.a = lerp(color.b, 0, dt);
+    color.r = lerp<float>(color.r, 1, dt / 4.0f);
+    color.g = lerp<float>(color.g, 1, dt / 4.0f);
+    color.b = lerp<float>(color.b, 1, dt / 4.0f);
 
     //not really accurate but it works
     vel *= owner->DAMPING * dt;

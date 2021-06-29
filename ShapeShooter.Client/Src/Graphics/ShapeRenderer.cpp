@@ -10,6 +10,13 @@ ShapeRenderer::ShapeRenderer()
     glGenBuffers(1, &position_vbo);
     glGenBuffers(1, &color_vbo);
 
+    glBindBuffer(GL_ARRAY_BUFFER, position_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * position_buffer.max_size(), &position_buffer[0], GL_DYNAMIC_DRAW);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, color_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * color_buffer.max_size(), &color_buffer[0], GL_DYNAMIC_DRAW);
+    
+
     current_color = glm::vec4(1.0);
 }
 
@@ -58,15 +65,15 @@ void ShapeRenderer::Flush()
     glBindVertexArray(vertex_array);
 
     glBindBuffer(GL_ARRAY_BUFFER, position_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * position_index, &position_buffer[0], GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * position_index, &position_buffer[0]);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, color_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * color_index, &color_buffer[0], GL_DYNAMIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * color_index, &color_buffer[0]);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
+    
     shader->Bind();
     shader->SetMat4("u_proj", proj);
     shader->SetMat4("u_view", view);

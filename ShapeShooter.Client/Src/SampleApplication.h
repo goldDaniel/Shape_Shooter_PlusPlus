@@ -1,9 +1,10 @@
 #ifndef SAMPLE_APPLICATION_H_
 #define SAMPLE_APPLICATION_H_
 
-#include "Application.h"
+#include "Core/Application.h"
 
 #include <Graphics/ShapeRenderer.h>
+#include <Graphics/SpriteBatch.h>
 #include <Util/Timer.h>
 #include <SpringMass/SpringMassGrid.h>
 
@@ -38,17 +39,30 @@ private:
 
 	glm::mat4 proj;
 	std::unique_ptr<SpringMassGrid> grid;
+
+
+	std::unique_ptr<Renderer> renderer;
 	std::unique_ptr<ShapeRenderer> sh;
+
+	std::unique_ptr<SpriteBatch> s;
+	Texture const * texture;
+
+
 
 	Camera cam;
 
 public:
 	SampleApplication() : Application()
 	{
+		s = std::make_unique<SpriteBatch>();
 		sh = std::make_unique<ShapeRenderer>();
-		cam = Camera({0,0,30});
+		renderer = std::make_unique<Renderer>();
+		
+		
+		cam = Camera({0, 0, 30});
+		grid = std::make_unique<SpringMassGrid>(glm::vec2{44, 22}, 0.1f);
 
-		grid = std::make_unique<SpringMassGrid>(glm::vec2{44, 22}, 0.4f);
+		texture = renderer->CreateTexture2D("Assets/Textures/space.jpg");
 	}
 
 	~SampleApplication()
@@ -56,31 +70,35 @@ public:
 	}
 
 protected:
-
 	virtual void Update(float dt) override
 	{
-		if (input->IsButtonDown(SDL_BUTTON_LEFT))
+		if (input->IsButtonJustPressed(SDL_BUTTON_LEFT))
 		{
 			auto screen_pos = input->GetMousePos();
-			auto world_pos = ProjectToXY0Plane(screen_pos, cam.GetViewMatrix(), proj, screen_width, screen_height);
+			auto world_pos = ProjectToXY0Plane(	screen_pos, cam.GetViewMatrix(), 
+												proj, 
+												static_cast<float>(screen_width), 
+												static_cast<float>(screen_height)
+			);
 
-			float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-			float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-			float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
-			grid->ApplyRadialForce({ world_pos, -0.1f }, 10.0f, 4.0f, {r,g,b, 1.0f});
+			grid->ApplyRadialForce({ world_pos, -.05f }, 250.0f, 4.0f, {0.6f, 0.2f, 0.5f, 1.0f});
 		}
-		grid->Update(1.0f/60.f);
+
+		grid->Update(1.0f/60.0f);
 	}
 
 	virtual void Render() override
 	{ 
+		renderer->SetClearColor({0.1f, 0.01f, 0.1f, 1.0f});
+		renderer->Clear();
+
+		s->Begin(glm::mat4(1.0f), glm::mat4(1.0f));
+		s->Draw(texture, 0, 0, 2, 2);
+		s->End();
+
 		proj = glm::perspective(glm::pi<float>() / 4.0f, (float)screen_width / (float)screen_height, 0.1f, 100.0f);
-
 		sh->Begin(proj, cam.GetViewMatrix());
-
 		grid->Render(sh.get());
-
 		sh->End();
 	}
 };

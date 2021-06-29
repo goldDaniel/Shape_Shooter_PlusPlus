@@ -4,7 +4,7 @@
 
 static void InitializeWindow(SDL_Window*& window, SDL_GLContext& gl_context, int windowW, int windowH)
 {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         std::cerr << "SDL2 video subsystem couldn't be initialized. Error: " << SDL_GetError() << std::endl;
         exit(1);
@@ -33,9 +33,14 @@ static void InitializeWindow(SDL_Window*& window, SDL_GLContext& gl_context, int
 
     
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
+    glEnable(GL_MULTISAMPLE);
 }
 
 Application::Application()
@@ -66,12 +71,11 @@ void Application::Run()
         input->Update();
         this->Update(dt);
 
-        renderer->Clear();
+        
         SDL_GetWindowSize(window, &screen_width, &screen_height);
         renderer->UpdateViewport(screen_width, screen_height);
 
         this->Render();
-
         
         SDL_GL_SwapWindow(window);
     }

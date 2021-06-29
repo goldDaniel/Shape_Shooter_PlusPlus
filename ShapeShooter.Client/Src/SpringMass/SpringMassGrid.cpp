@@ -2,7 +2,11 @@
 #include <future>
 
 SpringMassGrid::SpringMassGrid(glm::vec2 dimensions, float spacing)
-    : dimensions(dimensions)
+    : dimensions(dimensions),
+      accumulator(0),
+      STIFFNESS(10.25f),
+      DAMPING(3.25f),
+      INVERSE_MASS(1.0f / 0.025f)
 {
     rows = static_cast<std::size_t>(dimensions.x / spacing);
     cols = static_cast<std::size_t>(dimensions.y / spacing);
@@ -12,11 +16,7 @@ SpringMassGrid::SpringMassGrid(glm::vec2 dimensions, float spacing)
         points.emplace_back(std::vector<PointMass>());
         for (std::size_t j = 0; j < cols + 1; j++)
         {
-            float inv_mass = INVERSE_MASS;
-            if (i == 0 || i == rows || j == 0 || j == cols)
-            {
-                inv_mass = 0;
-            }
+            float inv_mass = (i == 0 || i == rows || j == 0 || j == cols) ? 0 : INVERSE_MASS;
 
             glm::vec3 pos = 
             {
@@ -45,21 +45,16 @@ void SpringMassGrid::ApplyRadialForce(glm::vec3 position, float force, float rad
     {
         for (auto& p : pointArr)
         {
-            if (p.pos.x < position.x + radius && p.pos.x > position.x - radius &&
-                p.pos.y < position.y + radius && p.pos.y > position.y - radius)
-            { 
-                float dist = glm::distance(position, p.pos);
-                if (dist < radius)
-                {
-                    glm::vec3 directional_force = p.pos - position;
+            float dist = glm::distance(position, p.pos);
+            if (dist < radius)
+            {
+                glm::vec3 directional_force = p.pos - position;
 
-                    directional_force = glm::normalize(directional_force);
-                    directional_force *= force * (1.0f - dist / radius);
+                directional_force = glm::normalize(directional_force);
+                directional_force *= force * (1.0f - dist / radius);
 
-                    p.color = color;
-
-                    p.accel += directional_force * p.inv_mass;
-                }
+                p.accel += directional_force * p.inv_mass;
+                p.color = color;
             }
         }
     }
@@ -67,26 +62,33 @@ void SpringMassGrid::ApplyRadialForce(glm::vec3 position, float force, float rad
 
 void SpringMassGrid::Update(float dt)
 {
-    for (auto& s : springs)
+    float step = 1.0f / 60.0f;
+    accumulator += dt;
+    while (accumulator >= step)
     {
-        s.Update(dt);
-    }
+        for (auto& s : springs)
+        {
+            s.Update(step);
+        }
 
-    std::vector<std::future<void>> futures;
-    for (auto& arr : points)
-    {
-        futures.emplace_back(std::async(std::launch::async, [&arr, dt] 
-        { 
-            for (auto& p : arr)
+        std::vector<std::future<void>> futures;
+        for (auto& arr : points)
+        {
+            futures.emplace_back(std::async(std::launch::async, [&arr, step]
             {
-                p.Update(dt);
-            }
-        }));   
-    }
+                for (auto& p : arr)
+                {
+                    p.Update(step);
+                }
+            }));
+        }
 
-    for (auto& f : futures)
-    {
-        f.wait();
+        for (auto& f : futures)
+        {
+            f.wait();
+        }
+
+        accumulator -= step;
     }
 }
 
@@ -98,11 +100,9 @@ void SpringMassGrid::Render(ShapeRenderer* const sh)
         float a1 = glm::abs(s.p1->pos.z);
         float a = glm::max(a0,a1);
 
-        sh->Line(
-            s.p0->pos,
-            s.p1->pos,
-            s.p0->color,
-            s.p1->color
+        sh->Line( 
+            s.p0->pos, s.p1->pos,
+            s.p0->color, s.p1->color
         );
     }
 }
