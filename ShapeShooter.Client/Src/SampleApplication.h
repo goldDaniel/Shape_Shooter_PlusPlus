@@ -5,33 +5,10 @@
 
 #include <Graphics/ShapeRenderer.h>
 #include <Graphics/SpriteBatch.h>
+#include <Util/Util.h>
 #include <Util/Timer.h>
 #include <SpringMass/SpringMassGrid.h>
 
-static glm::vec2 ProjectToXY0Plane(const glm::vec2& mouse_pos,
-	const glm::mat4& view,
-	const glm::mat4& proj,
-	const float window_width,
-	const float window_height)
-{
-	const glm::vec4 viewport{ 0, window_height, window_width, -window_height };
-
-	glm::vec3 screen_point_0(mouse_pos.x, mouse_pos.y, 0.f);
-	glm::vec3 screen_point_1(mouse_pos.x, mouse_pos.y, 100.f);
-	glm::vec3 model_point_0 = glm::unProject(screen_point_0, view, proj, viewport);
-	glm::vec3 model_point_1 = glm::unProject(screen_point_1, view, proj, viewport);
-
-	glm::vec3 plane_normal(0, 0, 1);
-	glm::vec3 ray_direction = glm::normalize(model_point_1 - model_point_0);
-
-	//Solve for d where dot((d * L + L0 - P0), n) = 0
-	float d = glm::dot(-model_point_0, plane_normal) / glm::dot(ray_direction, plane_normal);
-
-	//Use d to get back to point on plane
-	glm::vec3 point_on_plane = model_point_0 + d * ray_direction;
-
-	return glm::vec2(point_on_plane.x, point_on_plane.y);
-}
 
 class SampleApplication : public Application
 {
@@ -47,9 +24,13 @@ private:
 	std::unique_ptr<SpriteBatch> s;
 	Texture const * texture;
 
-
-
 	Camera cam;
+
+	bool consistent_force = false;
+
+	float force_amount = 250;
+	float force_radius = 4;
+
 
 public:
 	SampleApplication() : Application()
@@ -59,8 +40,9 @@ public:
 		renderer = std::make_unique<Renderer>();
 		
 		
-		cam = Camera({0, 0, 30});
-		grid = std::make_unique<SpringMassGrid>(glm::vec2{44, 22}, 0.1f);
+		cam = Camera({0, 0, 50});
+		cam.Front = -glm::normalize(cam.Position);
+		grid = std::make_unique<SpringMassGrid>(glm::vec2{44, 22}, 0.5f);
 
 		texture = renderer->CreateTexture2D("Assets/Textures/space.jpg");
 	}
@@ -72,19 +54,48 @@ public:
 protected:
 	virtual void Update(float dt) override
 	{
-		if (input->IsButtonJustPressed(SDL_BUTTON_LEFT))
+		if (consistent_force)
 		{
-			auto screen_pos = input->GetMousePos();
-			auto world_pos = ProjectToXY0Plane(	screen_pos, cam.GetViewMatrix(), 
-												proj, 
-												static_cast<float>(screen_width), 
-												static_cast<float>(screen_height)
-			);
-
-			grid->ApplyRadialForce({ world_pos, -.05f }, 250.0f, 4.0f, {0.6f, 0.2f, 0.5f, 1.0f});
+			grid->ApplyRadialForce({ 0,0, -.05f }, force_amount, force_radius);
 		}
 
-		grid->Update(1.0f/60.0f);
+		grid->Update(dt);
+
+		if (input->IsKeyDown(SDLK_r))
+		{
+			cam.Position = { 0, 0, 50 };
+			cam.Front = -glm::normalize(cam.Position);
+			cam.Up = { 0,1,0 };
+		}
+
+		if (input->IsKeyDown(SDLK_w))
+		{
+			cam.ProcessKeyboard(Camera_Movement::FORWARD, dt);
+		}
+		if (input->IsKeyDown(SDLK_s))
+		{
+			cam.ProcessKeyboard(Camera_Movement::BACKWARD, dt);
+		}
+		if (input->IsKeyDown(SDLK_a))
+		{
+			cam.ProcessKeyboard(Camera_Movement::LEFT, dt);
+		}
+		if (input->IsKeyDown(SDLK_d))
+		{
+			cam.ProcessKeyboard(Camera_Movement::RIGHT, dt);
+		}
+
+		static glm::vec2 prev = input->GetMousePos();
+		if (input->IsButtonDown(SDL_BUTTON_LEFT))
+		{
+			glm::vec2 curr = input->GetMousePos();
+			
+
+			auto delta = curr - prev;
+			cam.ProcessMouseMovement(delta.x, delta.y);
+			prev = curr;
+		}
+		prev = input->GetMousePos();
 	}
 
 	virtual void Render() override
@@ -96,10 +107,46 @@ protected:
 		s->Draw(texture, 0, 0, 2, 2);
 		s->End();
 
-		proj = glm::perspective(glm::pi<float>() / 4.0f, (float)screen_width / (float)screen_height, 0.1f, 100.0f);
+		proj = glm::perspective(glm::pi<float>() / 4.0f, (float)screen_width / (float)screen_height, 0.1f, 500.0f);
 		sh->Begin(proj, cam.GetViewMatrix());
 		grid->Render(sh.get());
 		sh->End();
+
+
+		ImGui::Begin("Grid Control", 0, ImGuiWindowFlags_NoMove);
+		{
+			bool reset_grid = false;
+			float mass = 1.0f / grid->inverse_mass;
+
+			float spacing = 1.0f / grid->spacing;
+
+			if (ImGui::SliderFloat("density", &spacing, 0.01f, 10)) reset_grid = true;
+			if (ImGui::SliderFloat("stiffness", &grid->stiffness, 0, 150)) reset_grid = true;
+			if (ImGui::SliderFloat("damping", &grid->damping, 0, 50))	  reset_grid = true;	
+			if (ImGui::SliderFloat("mass of point", &mass, 0.01f, 50.f))  reset_grid = true;
+			grid->inverse_mass = 1.0f / mass;
+			grid->spacing = 1.0f / spacing;
+
+			ImGui::Spacing();
+			ImGui::Spacing();
+			ImGui::Spacing();
+
+			if (ImGui::SliderFloat("force amount", &force_amount, 0, 1000)) reset_grid = true;
+			if (ImGui::SliderFloat("force radius", &force_radius, 0, 50)) reset_grid = true;
+			ImGui::Checkbox("Consistent Force", &consistent_force);
+			
+			if (reset_grid)
+			{
+				grid = std::make_unique<SpringMassGrid>(glm::vec2{ 44, 22 }, 
+														grid->spacing, 
+														grid->stiffness, 
+														grid->damping, 
+														grid->inverse_mass
+				);
+			}
+		}
+		ImGui::End();
+
 	}
 };
 

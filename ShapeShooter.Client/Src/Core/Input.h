@@ -1,10 +1,13 @@
-#ifndef INPUT_H_
-#define INPUT_H_
+#ifndef INPUT_H
+#define INPUT_H
 
 #include <SDL.h>
 
 #include <functional>
 #include <unordered_map>
+
+//need to send the SDL event to ImGui
+#include <imgui/imgui_impl_sdl.h>
 
 class Input
 {
@@ -49,7 +52,6 @@ public:
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-
             switch (event.type)
             {
             case SDL_QUIT:

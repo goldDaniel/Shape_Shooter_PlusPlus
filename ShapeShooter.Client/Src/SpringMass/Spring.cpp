@@ -20,9 +20,9 @@ void Spring::Update(float dt)
 
     if (dst2 > target_len * target_len)
     {
-        auto dv = (p1->vel - p0->vel) * dt * owner->DAMPING;
+        auto dv = (p1->vel - p0->vel) * dt * owner->damping;
        
-        auto force = (p0->pos - p1->pos) * owner->STIFFNESS;
+        auto force = (p0->pos - p1->pos) * owner->stiffness;
         force -= dv;
 
         p1->accel += force * p1->inv_mass;

@@ -87,7 +87,7 @@ void ShapeRenderer::SetColor(const glm::vec4& color)
 }
 
 
-void ShapeRenderer::Line(const glm::vec2& p0, const glm::vec2& p1)
+void ShapeRenderer::Line(const glm::vec3& p0, const glm::vec3& p1)
 {
     if (position_index + 6 >= MAX_BUFFER_SIZE - 1)
     {
@@ -97,10 +97,10 @@ void ShapeRenderer::Line(const glm::vec2& p0, const glm::vec2& p1)
 
     position_buffer[position_index + 0] = p0.x;
     position_buffer[position_index + 1] = p0.y;
-    position_buffer[position_index + 2] = 0;
+    position_buffer[position_index + 2] = p0.z;
     position_buffer[position_index + 3] = p1.x;
     position_buffer[position_index + 4] = p1.y;
-    position_buffer[position_index + 5] = 0;
+    position_buffer[position_index + 5] = p1.z;
 
     color_buffer[color_index + 0] = current_color.r;
     color_buffer[color_index + 1] = current_color.g;
@@ -115,7 +115,7 @@ void ShapeRenderer::Line(const glm::vec2& p0, const glm::vec2& p1)
     color_index += 8;
 }
 
-void ShapeRenderer::Line(const glm::vec2& p0, const glm::vec2& p1, const glm::vec4& col0, const glm::vec4& col1)
+void ShapeRenderer::Line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& col0, const glm::vec4& col1)
 {
     if (position_index + 6 >= MAX_BUFFER_SIZE - 1)
     {
@@ -125,10 +125,10 @@ void ShapeRenderer::Line(const glm::vec2& p0, const glm::vec2& p1, const glm::ve
 
     position_buffer[position_index + 0] = p0.x;
     position_buffer[position_index + 1] = p0.y;
-    position_buffer[position_index + 2] = 0;
+    position_buffer[position_index + 2] = p0.z;
     position_buffer[position_index + 3] = p1.x;
     position_buffer[position_index + 4] = p1.y;
-    position_buffer[position_index + 5] = 0;
+    position_buffer[position_index + 5] = p1.z;
 
     color_buffer[color_index + 0] = col0.r;
     color_buffer[color_index + 1] = col0.g;
@@ -158,16 +158,16 @@ void ShapeRenderer::Ellipse(const glm::vec2& position, float rX, float rY, int s
         glm::vec2 p0 = position + glm::vec2(glm::cos(angle0) * rX, glm::sin(angle0) * rY);
         glm::vec2 p1 = position + glm::vec2(glm::cos(angle1) * rX, glm::sin(angle1) * rY);
 
-        Line(p0, p1);
+        Line({ p0, 0 }, { p1, 0 });
     }
 }
 
 void ShapeRenderer::Rect(const glm::vec2& min, const glm::vec2& max)
 {
-    glm::vec2 p0(min.x, min.y);
-    glm::vec2 p1(max.x, min.y);
-    glm::vec2 p2(max.x, max.y);
-    glm::vec2 p3(min.x, max.y);
+    glm::vec3 p0(min.x, min.y, 0);
+    glm::vec3 p1(max.x, min.y, 0);
+    glm::vec3 p2(max.x, max.y, 0);
+    glm::vec3 p3(min.x, max.y, 0);
 
     Line(p0, p1);
     Line(p1, p2);

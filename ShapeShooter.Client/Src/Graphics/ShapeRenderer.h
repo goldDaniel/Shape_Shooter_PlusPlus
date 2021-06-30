@@ -72,9 +72,9 @@ public:
      * @param p0 first point for the line
      * @param p1 second point for the line
      */
-    void Line(const glm::vec2& p0, const glm::vec2& p1);
+    void Line(const glm::vec3& p0, const glm::vec3& p1);
 
-    void Line(const glm::vec2& p0, const glm::vec2& p1, const glm::vec4& col0, const glm::vec4& col1);
+    void Line(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& col0, const glm::vec4& col1);
 
     /**
      * @brief Sets the color for all following shapes.
