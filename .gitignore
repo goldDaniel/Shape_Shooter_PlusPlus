@@ -31,8 +31,6 @@
 *.out
 *.app
 
-*.jpg
-*.png
 *.pdb
 
 Debug/
